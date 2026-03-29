@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: recrut-ai-saas
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: RESUMEPARSER_API_KEY
+        sync: false          # Set manually in Render dashboard
+      - key: PADDLE_VENDOR_ID
+        sync: false          # Your Paddle vendor/seller ID
+      - key: PADDLE_PRODUCT_ID
+        sync: false          # Your Paddle price ID (pri_xxx)
+      - key: PADDLE_WEBHOOK_SECRET
+        sync: false          # From Paddle → Notifications → Webhook secret
+      - key: PADDLE_ENV
+        value: production    # Change to 'sandbox' for testing
+      - key: DATABASE_URL
+        value: sqlite:///recrut_saas.db   # Or use a Postgres addon

@@ -1,0 +1,611 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — RecrutAI{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── APP LAYOUT ── */
+.app{display:grid;grid-template-columns:290px 1fr;min-height:calc(100vh - 62px)}
+
+/* ── SIDEBAR ── */
+aside{background:var(--warm-white);border-right:1.5px solid var(--border);
+  padding:1.5rem 1.2rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.4rem}
+.sec-lbl{font-size:.6rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+label{font-size:.77rem;font-weight:500;color:var(--text2);display:block;margin-bottom:.22rem}
+input[type=text],textarea{
+  background:var(--cream);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-family:'Jost',sans-serif;font-size:.82rem;
+  padding:.48rem .72rem;width:100%;transition:border-color .2s;resize:none}
+input:focus,textarea:focus{outline:none;border-color:var(--caramel)}
+textarea{min-height:82px;line-height:1.55}
+::placeholder{color:var(--text3)}
+.field{display:flex;flex-direction:column;gap:.2rem}
+.dz{border:2px dashed var(--border2);border-radius:var(--r2);padding:1.25rem;
+  text-align:center;cursor:pointer;position:relative;transition:all .2s;background:var(--cream)}
+.dz:hover,.dz.drag{border-color:var(--caramel);background:rgba(176,125,78,.04)}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ic{font-size:1.45rem;opacity:.5;margin-bottom:.28rem}
+.dz-t{font-size:.79rem;font-weight:500;color:var(--text2)}
+.dz-t strong{color:var(--caramel)}
+.dz-s{font-size:.67rem;color:var(--text3);margin-top:2px}
+.paste-btn{background:none;border:none;color:var(--caramel);font-size:.72rem;
+  font-family:'Jost',sans-serif;cursor:pointer;text-decoration:underline;
+  text-underline-offset:3px;padding:0}
+.paste-box{display:none;flex-direction:column;gap:.38rem;animation:fadeIn .2s;
+  border:1px solid var(--border);border-radius:var(--r);padding:.65rem;
+  background:var(--cream2);margin-top:.32rem}
+.paste-box.open{display:flex}
+.cv-list{display:flex;flex-direction:column;gap:.28rem}
+.cv-empty{font-size:.73rem;color:var(--text3);text-align:center;padding:.45rem;font-style:italic}
+.cv-item{background:var(--cream);border:1px solid var(--border);border-radius:var(--r);
+  padding:.4rem .58rem;display:flex;align-items:center;gap:.38rem;animation:slideIn .22s}
+.cv-ext{font-size:.55rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 6px;border-radius:9px;flex-shrink:0}
+.ext-pdf{background:#fee2e2;color:#991b1b}.ext-docx{background:#dbeafe;color:#1e40af}
+.ext-txt{background:#ede9fe;color:#5b21b6}
+.cv-name{font-size:.75rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-badge{font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:9px;flex-shrink:0}
+.bhi{background:var(--green-bg);color:var(--green)}.bmd{background:var(--amber-bg);color:var(--amber)}
+.blo{background:var(--red-bg);color:var(--red)}
+.cv-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.83rem;flex-shrink:0;padding:2px}
+.cv-del:hover{color:var(--red)}
+.sbar-btn{display:inline-flex;align-items:center;justify-content:center;gap:.38rem;
+  padding:.58rem 1.05rem;border-radius:var(--r);font-family:'Jost',sans-serif;
+  font-size:.84rem;font-weight:500;cursor:pointer;transition:all .2s;
+  width:100%;border:1px solid transparent}
+.btn-p{background:var(--brown);color:var(--cream);border-color:var(--brown)}
+.btn-p:hover{background:var(--brown2)}
+.btn-p:disabled{opacity:.38;cursor:not-allowed}
+.btn-o{background:transparent;color:var(--brown);border-color:var(--border2)}
+.btn-o:hover:not(:disabled){border-color:var(--caramel);color:var(--caramel)}
+.btn-o:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm2{padding:.36rem .78rem;font-size:.73rem;width:auto}
+.prog-wrap{display:none;flex-direction:column;gap:.28rem}
+.prog-txt{font-size:.7rem;color:var(--text3);text-align:center}
+.prog-track{background:var(--cream3);border-radius:10px;height:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--caramel),var(--caramel2));
+  border-radius:10px;transition:width .3s;width:0%}
+.exp-row{display:none;gap:.42rem}
+.exp-row .sbar-btn{flex:1}
+
+/* ── USAGE WIDGET ── */
+.usage-widget{background:var(--cream);border:1px solid var(--border);border-radius:var(--r2);padding:.9rem}
+.usage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.usage-title{font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.usage-nums{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1}
+.usage-sub{font-size:.68rem;color:var(--text3)}
+.usage-bar-track{background:var(--cream3);border-radius:10px;height:6px;overflow:hidden;margin:.45rem 0}
+.usage-bar-fill{height:100%;border-radius:10px;transition:width .4s}
+.fill-ok{background:linear-gradient(90deg,var(--green),#52c77e)}
+.fill-warn{background:linear-gradient(90deg,var(--amber),#f5a623)}
+.fill-full{background:linear-gradient(90deg,var(--red),#e85d52)}
+.trial-banner{background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:var(--r);
+  padding:.52rem .75rem;font-size:.76rem;color:var(--blue);font-weight:500;margin-top:.4rem}
+.limit-warn{background:var(--amber-bg);border:1px solid var(--amber-b);border-radius:var(--r);
+  padding:.52rem .75rem;font-size:.76rem;color:var(--amber);font-weight:500;margin-top:.4rem;display:none}
+.limit-full{background:var(--red-bg);border:1px solid var(--red-b);border-radius:var(--r);
+  padding:.6rem .75rem;font-size:.78rem;color:var(--red);font-weight:500;margin-top:.4rem;display:none;
+  line-height:1.55}
+
+/* ── MAIN ── */
+main{padding:1.5rem 1.75rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.05rem}
+.dtabs{display:flex;border-bottom:1px solid var(--border)}
+.tab{background:none;border:none;border-bottom:2px solid transparent;
+  padding:.56rem 1.05rem;font-family:'Jost',sans-serif;font-size:.81rem;
+  color:var(--text3);cursor:pointer;transition:all .2s;margin-bottom:-1px;font-weight:500}
+.tab:hover{color:var(--text2)}.tab.active{color:var(--brown);border-bottom-color:var(--caramel)}
+.tab-panel{display:none}
+.tab-panel.active{display:flex;flex-direction:column;gap:.95rem;animation:fadeIn .3s}
+.empty{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:4rem 2rem;gap:.55rem;text-align:center}
+.empty-ic{font-size:2rem;opacity:.23}.empty-t{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text2)}
+.empty-s{font-size:.76rem;color:var(--text3);max-width:250px;line-height:1.6}
+.rcard{background:var(--warm-white);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);animation:fadeIn .4s}
+.rch{display:flex;align-items:center;justify-content:space-between;
+  padding:.88rem 1.15rem;border-bottom:1px solid var(--border);background:var(--cream2);gap:.7rem}
+.rcl{display:flex;align-items:center;gap:.62rem;min-width:0}
+.ava{width:38px;height:38px;border-radius:50%;background:var(--parchment);flex-shrink:0;
+  border:1.5px solid var(--caramel);display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:.82rem;color:var(--caramel);font-family:'Cormorant Garamond',serif}
+.rcname{font-weight:600;font-size:.9rem;color:var(--ink);font-family:'Cormorant Garamond',serif;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rctitle{font-size:.73rem;color:var(--text2)}
+.sblk{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.snum{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;line-height:1}
+.sden{font-size:.63rem;color:var(--text3);letter-spacing:.5px}
+.rcb{padding:.95rem 1.15rem;display:flex;flex-direction:column;gap:.82rem}
+.igrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:.42rem}
+.ichip{background:var(--cream);border:1px solid var(--border);border-radius:var(--r);padding:.43rem .58rem}
+.ilbl{font-size:.59rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:2px}
+.ival{font-size:.77rem;color:var(--text);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:.26rem}
+.chip{background:var(--cream2);color:var(--brown2);border:1px solid var(--border);
+  padding:3px 9px;border-radius:20px;font-size:.67rem;font-weight:500}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.38rem}
+.sbar{background:var(--cream);border:1px solid var(--border);border-radius:var(--r);padding:.48rem .58rem}
+.slbl{font-size:.59rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:.28rem}
+.strk{background:var(--cream3);border-radius:4px;height:4px;overflow:hidden}
+.sfil{height:100%;border-radius:4px;background:var(--caramel)}
+.sval{font-size:.74rem;font-weight:600;color:var(--brown);margin-top:.22rem}
+.quote{border-left:3px solid var(--caramel);padding:.58rem .82rem;
+  background:rgba(176,125,78,.04);border-radius:0 var(--r) var(--r) 0;
+  font-style:italic;font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--text2);line-height:1.65}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:.42rem}
+.pb,.cb{background:var(--cream);border-radius:var(--r);padding:.58rem .72rem}
+.pb{border:1px solid var(--green-b)}.cb{border:1px solid var(--red-b)}
+.pch{font-size:.61rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:.26rem}
+.pb .pch{color:var(--green)}.cb .pch{color:var(--red)}
+.pc ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+.pc li{font-size:.73rem;color:var(--text2);padding-left:.78rem;position:relative}
+.pc li::before{position:absolute;left:0}
+.pb li::before{content:'✓';color:var(--green)}.cb li::before{content:'✗';color:var(--red)}
+.rbar{display:flex;align-items:center;gap:.48rem;padding:.5rem .8rem;
+  border-radius:var(--r);font-size:.77rem;font-weight:500}
+.rg{background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+.ra{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+.rr{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)}
+.srow{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:.58rem}
+.scard{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--r2);
+  padding:.82rem .95rem;box-shadow:var(--shadow)}
+.sv{font-family:'Cormorant Garamond',serif;font-size:1.85rem;font-weight:600;
+  color:var(--ink);line-height:1;margin-bottom:.1rem}
+.sl{font-size:.63rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.sc-c .sv{color:var(--caramel)}.sc-g .sv{color:var(--green)}.sc-a .sv{color:var(--amber)}.sc-r .sv{color:var(--red)}
+.ctbl-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border);box-shadow:var(--shadow)}
+.ctbl{width:100%;border-collapse:collapse;font-size:.77rem;min-width:540px}
+.ctbl th{background:var(--cream2);border-bottom:1px solid var(--border);padding:.52rem .8rem;
+  text-align:left;font-weight:600;font-size:.63rem;letter-spacing:1px;text-transform:uppercase;color:var(--text2);white-space:nowrap}
+.ctbl td{border-bottom:1px solid var(--border);padding:.52rem .8rem;vertical-align:middle}
+.ctbl tr:last-child td{border-bottom:none}.ctbl tr:hover td{background:var(--cream)}
+.rpill{display:inline-flex;font-size:.68rem;font-weight:600;padding:2px 9px;border-radius:20px;
+  background:var(--parchment);color:var(--brown);border:1px solid var(--border2)}
+.brow td{background:rgba(176,125,78,.04)!important}
+.lcard{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--r2);
+  padding:.88rem 1.15rem;display:flex;align-items:center;gap:.82rem;animation:fadeIn .3s}
+.spin{width:24px;height:24px;border:2.5px solid var(--border2);
+  border-top-color:var(--caramel);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.lname{font-size:.8rem;color:var(--text2)}.lsub{font-size:.69rem;color:var(--text3);margin-top:1px}
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--brown);color:var(--cream);
+  border-radius:var(--r);padding:.6rem 1rem;font-size:.78rem;z-index:999;
+  animation:slideUp .3s;display:none;box-shadow:var(--shadow2)}
+.toast.show{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="app">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside>
+
+    <!-- Usage Widget -->
+    <div>
+      <div class="sec-lbl">Utilisation du jour</div>
+      <div class="usage-widget">
+        <div class="usage-header">
+          <div>
+            <div class="usage-title">CVs analysés</div>
+            <div class="usage-nums" id="usageNums">
+              {{ user.daily_usage_count }} / {{ user.daily_limit }}
+            </div>
+            <div class="usage-sub" id="usageSub">
+              {{ user.usage_remaining }} restant(s) aujourd'hui
+            </div>
+          </div>
+          {% set ep = user.effective_plan %}
+          <span class="plan-badge badge-{{ ep }}">
+            {% if ep == 'trial' %}⏱ Trial{% elif ep == 'pro' %}⭐ Pro{% else %}Free{% endif %}
+          </span>
+        </div>
+
+        <!-- Progress bar -->
+        {% set pct = user.usage_percent %}
+        <div class="usage-bar-track">
+          <div id="usageBarFill" class="usage-bar-fill {% if pct >= 100 %}fill-full{% elif pct >= 75 %}fill-warn{% else %}fill-ok{% endif %}"
+            style="width:{{ pct }}%"></div>
+        </div>
+
+        <!-- Trial banner -->
+        {% if user.is_trial_active %}
+        <div class="trial-banner" id="trialBanner">
+          ⏱ Essai Pro — <strong>{{ user.trial_days_left }} jour(s) restant(s)</strong>
+        </div>
+        {% endif %}
+
+        <!-- Warning: near limit -->
+        <div class="limit-warn" id="limitWarn">
+          ⚠️ Attention : il ne vous reste que <strong id="warnLeft"></strong> analyse(s).
+        </div>
+
+        <!-- Limit reached -->
+        <div class="limit-full" id="limitFull">
+          🚫 Limite atteinte pour aujourd'hui.<br>
+          {% if ep != 'pro' %}
+          <a href="{{ url_for('dashboard.upgrade') }}" style="color:var(--red);font-weight:600;text-decoration:underline">
+            Passer Pro pour 50/jour →
+          </a>
+          {% else %}
+          Revenez demain.
+          {% endif %}
+        </div>
+      </div>
+
+      {% if ep != 'pro' %}
+      <a href="{{ url_for('dashboard.upgrade') }}" class="btn btn-gold btn-sm"
+        style="margin-top:.6rem;width:100%;display:flex">
+        ⭐ Passer Pro — 9,99 $/mois
+      </a>
+      {% endif %}
+    </div>
+
+    <hr class="divider">
+
+    <!-- Poste -->
+    <div>
+      <div class="sec-lbl">Poste recherché</div>
+      <div style="display:flex;flex-direction:column;gap:.48rem">
+        <div class="field"><label>Titre du poste</label>
+          <input type="text" id="jobTitle" placeholder="Ex : Développeur Full Stack" /></div>
+        <div class="field"><label>Description & compétences</label>
+          <textarea id="jobDesc" placeholder="Compétences clés, expérience…"></textarea></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Upload -->
+    <div>
+      <div class="sec-lbl">Importer des CV</div>
+      <div class="dz" id="dropZone">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" multiple />
+        <div class="dz-ic">📂</div>
+        <div class="dz-t"><strong>Glisser & déposer</strong> ou cliquer</div>
+        <div class="dz-s">PDF · DOCX · TXT</div>
+      </div>
+      <div style="text-align:center;margin:.38rem 0;font-size:.66rem;color:var(--text3)">— ou —</div>
+      <button class="paste-btn" onclick="togglePaste()">✏️ Coller du texte</button>
+      <div class="paste-box" id="pasteBox">
+        <div class="field"><label>Nom</label>
+          <input type="text" id="pasteName" placeholder="Prénom Nom" /></div>
+        <div class="field"><label>Contenu du CV</label>
+          <textarea id="pasteText" style="min-height:62px" placeholder="Collez le texte…"></textarea></div>
+        <button class="sbar-btn btn-o btn-sm2" style="align-self:flex-end" onclick="addPasted()">+ Ajouter</button>
+      </div>
+    </div>
+
+    <!-- CV list -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.42rem">
+        <div class="sec-lbl" style="margin:0">CV chargés</div>
+        <span id="cvCount" style="font-size:.68rem;background:var(--cream2);color:var(--brown2);
+          border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-weight:500">0</span>
+      </div>
+      <div class="cv-list" id="cvList"><div class="cv-empty">Aucun CV importé</div></div>
+    </div>
+
+    <hr class="divider">
+
+    <button class="sbar-btn btn-p" id="analyzeBtn" onclick="startAnalysis()" disabled>⚡ Analyser</button>
+
+    <div class="prog-wrap" id="progressWrap">
+      <div class="prog-txt" id="progressText">0 / 0</div>
+      <div class="prog-track"><div class="prog-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="exp-row" id="exportRow">
+      <button class="sbar-btn btn-o" onclick="doExport('excel')">📥 Excel</button>
+      <button class="sbar-btn btn-o" onclick="doExport('csv')">📄 CSV</button>
+    </div>
+
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main>
+    <div class="dtabs">
+      <button class="tab active" onclick="showTab('results',this)">📊 Analyses</button>
+      <button class="tab" onclick="showTab('compare',this)">⚖️ Comparaison</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-results">
+      <div class="empty" id="emptyResults">
+        <div class="empty-ic">🔍</div>
+        <div class="empty-t">Prêt à analyser</div>
+        <div class="empty-s">Importez vos CV, renseignez le poste, puis cliquez Analyser.</div>
+      </div>
+      <div id="resultsList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-compare">
+      <div class="empty" id="emptyCompare">
+        <div class="empty-ic">⚖️</div>
+        <div class="empty-t">Comparaison</div>
+        <div class="empty-s">Analysez 2+ CV pour voir le classement.</div>
+      </div>
+      <div id="compareContent"></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let sid='', cvFiles=[], results=[];
+let usageUsed = {{ user.daily_usage_count }};
+let usageLimit = {{ user.daily_limit }};
+
+// ── Usage widget update ────────────────────────────────────────────────────
+function updateUsageWidget(used, limit){
+  usageUsed = used; usageLimit = limit;
+  const rem = Math.max(0, limit - used);
+  const pct = limit > 0 ? Math.min(100, Math.round(used/limit*100)) : 100;
+  document.getElementById('usageNums').textContent = `${used} / ${limit}`;
+  document.getElementById('usageSub').textContent = `${rem} restant(s) aujourd'hui`;
+  const fill = document.getElementById('usageBarFill');
+  fill.style.width = pct+'%';
+  fill.className = 'usage-bar-fill ' + (pct>=100?'fill-full':pct>=75?'fill-warn':'fill-ok');
+  // Warning panels
+  const warn = document.getElementById('limitWarn');
+  const full = document.getElementById('limitFull');
+  const wl   = document.getElementById('warnLeft');
+  if(rem === 0){
+    warn.style.display='none'; full.style.display='block';
+    document.getElementById('analyzeBtn').disabled=true;
+  } else if(rem <= 5){
+    warn.style.display='block'; full.style.display='none';
+    if(wl) wl.textContent=rem;
+  } else {
+    warn.style.display='none'; full.style.display='none';
+  }
+}
+// Initialize
+updateUsageWidget({{ user.daily_usage_count }}, {{ user.daily_limit }});
+
+// ── File Upload ────────────────────────────────────────────────────────────
+const dz=document.getElementById('dropZone'), fi=document.getElementById('fileInput');
+fi.addEventListener('change',e=>{uploadFiles(e.target.files);fi.value='';});
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');uploadFiles(e.dataTransfer.files);});
+
+async function uploadFiles(files){
+  const allowed=['.pdf','.docx','.doc','.txt'];
+  const valid=Array.from(files).filter(f=>allowed.some(e=>f.name.toLowerCase().endsWith(e)));
+  if(!valid.length){toast('⚠️ PDF, DOCX ou TXT uniquement');return;}
+
+  // Check if upload would exceed limit
+  const remaining = usageLimit - usageUsed;
+  if(valid.length > remaining && remaining === 0){
+    toast('🚫 Limite journalière atteinte. Revenez demain ou passez Pro.');
+    return;
+  }
+
+  valid.forEach(f=>{
+    const n=f.name.replace(/\.[^.]+$/,'');
+    if(!cvFiles.find(c=>c.name===n)) cvFiles.push({name:n,ext:f.name.split('.').pop().toLowerCase(),status:'uploading'});
+  });
+  renderCVList(); updateBtn();
+  const fd=new FormData(); if(sid) fd.append('session_id',sid);
+  valid.forEach(f=>fd.append('cvs',f));
+  try{
+    const r=await fetch('/upload',{method:'POST',body:fd}); const d=await r.json();
+    sid=d.session_id;
+    valid.forEach(f=>{const cv=cvFiles.find(c=>c.name===f.name.replace(/\.[^.]+$/,''));if(cv)cv.status='ready';});
+    renderCVList(); updateBtn(); toast(`✅ ${valid.length} CV(s) prêt(s)`);
+  }catch(e){toast('❌ Erreur upload');}
+}
+
+function togglePaste(){document.getElementById('pasteBox').classList.toggle('open');}
+async function addPasted(){
+  const n=document.getElementById('pasteName').value.trim()||`Candidat ${cvFiles.length+1}`;
+  const t=document.getElementById('pasteText').value.trim();
+  if(!t){toast('⚠️ Collez le texte');return;}
+  const blob=new Blob([t],{type:'text/plain'}); const file=new File([blob],n+'.txt');
+  const fd=new FormData(); if(sid) fd.append('session_id',sid); fd.append('cvs',file,n+'.txt');
+  cvFiles.push({name:n,ext:'txt',status:'uploading'}); renderCVList();
+  try{
+    const r=await fetch('/upload',{method:'POST',body:fd}); const d=await r.json();
+    sid=d.session_id; const cv=cvFiles.find(c=>c.name===n); if(cv) cv.status='ready';
+    document.getElementById('pasteName').value=''; document.getElementById('pasteText').value='';
+    renderCVList(); updateBtn(); toast(`✅ ${n} ajouté`);
+  }catch(e){toast('❌ '+e.message);}
+}
+
+function removeCV(name){
+  cvFiles.splice(cvFiles.findIndex(c=>c.name===name),1);
+  const j=results.findIndex(r=>r._fichier===name||r.nom===name); if(j>-1) results.splice(j,1);
+  renderCVList(); renderResults(); updateBtn();
+}
+
+function scoreClass(s){return s>=7?'bhi':s>=5?'bmd':'blo';}
+function renderCVList(){
+  document.getElementById('cvCount').textContent=cvFiles.length;
+  if(!cvFiles.length){document.getElementById('cvList').innerHTML='<div class="cv-empty">Aucun CV importé</div>';return;}
+  document.getElementById('cvList').innerHTML=cvFiles.map(cv=>{
+    const r=results.find(x=>x._fichier===cv.name||x.nom===cv.name);
+    const badge=r&&!r._error?`<span class="cv-badge ${scoreClass(r.score_global)}">${r.score_global}/10</span>`:'';
+    const st=cv.status==='uploading'?'<span style="font-size:.62rem;color:#1e40af">📤</span>':cv.status==='error'?'<span style="font-size:.62rem;color:var(--red)">❌</span>':'';
+    return `<div class="cv-item"><span class="cv-ext ext-${cv.ext}">${cv.ext}</span>
+      <span class="cv-name">${cv.name}</span>${st}${badge}
+      <button class="cv-del" onclick="removeCV('${cv.name.replace(/'/g,"\\'")}')">✕</button></div>`;
+  }).join('');
+}
+
+function updateBtn(){
+  const rem=usageLimit-usageUsed;
+  const ok=cvFiles.some(c=>c.status==='ready') && rem > 0;
+  document.getElementById('analyzeBtn').disabled=!ok;
+}
+
+// ── Analyze SSE ───────────────────────────────────────────────────────────
+function startAnalysis(){
+  const ready=cvFiles.filter(c=>c.status==='ready');
+  if(!ready.length){toast('⚠️ Uploadez d\'abord des CV');return;}
+
+  const rem = usageLimit - usageUsed;
+  if(rem <= 0){toast('🚫 Limite journalière atteinte.');return;}
+
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('progressWrap').style.display='flex';
+  document.getElementById('exportRow').style.display='none';
+  document.getElementById('emptyResults').style.display='none';
+  document.getElementById('resultsList').innerHTML='';
+  results.length=0;
+
+  const jt=encodeURIComponent(document.getElementById('jobTitle').value||'');
+  const jd=encodeURIComponent(document.getElementById('jobDesc').value||'');
+  const es=new EventSource(`/analyze?session_id=${sid}&job_title=${jt}&job_desc=${jd}`);
+
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    if(d.type==='start'){ready.forEach(cv=>showLoader(cv.name));}
+    else if(d.type==='result'){
+      results.push(d.result); removeLoader(d.result._fichier);
+      if(!d.result._error) renderOneResult(d.result);
+      renderCVList(); setProgress(d.done,d.total,d.result.nom||d.result._fichier);
+    }
+    else if(d.type==='done'){
+      es.close();
+      document.getElementById('analyzeBtn').disabled=false;
+      document.getElementById('progressWrap').style.display='none';
+      document.getElementById('exportRow').style.display='flex';
+      if(results.filter(r=>!r._error).length>=2) renderComparison();
+      // Update usage widget with fresh counts
+      updateUsageWidget(d.used, d.limit);
+      updateBtn();
+      toast(`✅ ${d.ok}/${d.total} analysés — Moy. ${d.avg}/10`);
+    }
+    else if(d.type==='error'){
+      es.close();
+      document.getElementById('analyzeBtn').disabled=false;
+      document.getElementById('progressWrap').style.display='none';
+      if(d.limit_reached){ updateUsageWidget(d.used||usageUsed, usageLimit); updateBtn(); }
+      toast(`🚫 ${d.error}`);
+    }
+  };
+  es.onerror=()=>{
+    es.close();
+    document.getElementById('analyzeBtn').disabled=false;
+    document.getElementById('progressWrap').style.display='none';
+    toast('❌ Erreur de connexion');
+  };
+}
+
+function setProgress(done,total,name){
+  document.getElementById('progressText').textContent=`${done}/${total} — ${name}`;
+  document.getElementById('progressFill').style.width=Math.round(done/total*100)+'%';
+}
+function showLoader(name){
+  const d=document.createElement('div');d.id='ld-'+name.replace(/\W/g,'_');d.className='lcard';
+  d.innerHTML=`<div class="spin"></div><div><div class="lname">${name}</div><div class="lsub">Analyse en cours…</div></div>`;
+  document.getElementById('resultsList').appendChild(d);
+}
+function removeLoader(name){const e=document.getElementById('ld-'+name.replace(/\W/g,'_'));if(e)e.remove();}
+
+// ── Render results ────────────────────────────────────────────────────────
+function scolor(s){return s>=8?'var(--green)':s>=6?'var(--amber)':'var(--red)';}
+function rcls(r){return r.includes('recommandé')?'rg':r.includes('considérer')?'ra':'rr';}
+function rico(r){return r.includes('recommandé')?'✅':r.includes('considérer')?'⚠️':'❌';}
+
+function renderOneResult(r){
+  const el=document.createElement('div');el.id='res-'+r._fichier;el.className='rcard';
+  const nom=r.nom||r._fichier;
+  const init=nom.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+  const s=r.score_global,reco=r.recommandation||'';
+  const sk=r.competences_techniques||[],pros=r.points_forts||[],cons=r.points_faibles||[];
+  el.innerHTML=`
+    <div class="rch">
+      <div class="rcl"><div class="ava">${init}</div>
+        <div style="min-width:0"><div class="rcname">${nom}</div><div class="rctitle">${r.poste_actuel||'—'}</div></div>
+      </div>
+      <div class="sblk"><div class="snum" style="color:${scolor(s)}">${s}</div><div class="sden">/ 10</div></div>
+    </div>
+    <div class="rcb">
+      <div class="igrid">
+        <div class="ichip"><div class="ilbl">Expérience</div><div class="ival">${r.experience_annees} ans · ${r.niveau}</div></div>
+        <div class="ichip"><div class="ilbl">Formation</div><div class="ival">${r.formation||'—'}</div></div>
+        <div class="ichip"><div class="ilbl">Localisation</div><div class="ival">${r.localisation||'—'}</div></div>
+        <div class="ichip"><div class="ilbl">Langues</div><div class="ival">${(r.langues||[]).join(', ')||'—'}</div></div>
+        <div class="ichip"><div class="ilbl">Email</div><div class="ival" style="font-size:.69rem">${r.email||'—'}</div></div>
+        <div class="ichip"><div class="ilbl">Adéquation</div><div class="ival" style="color:${scolor(s)};font-weight:600">${r.adequation_poste}%</div></div>
+      </div>
+      ${sk.length?`<div><div style="font-size:.59rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:.28rem">Compétences</div>
+        <div class="chips">${sk.slice(0,12).map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>`:''}
+      <div class="sgrid">
+        ${[['Compét.',r.score_competences],['Expér.',r.score_experience],['Format.',r.score_formation],['Global',s]].map(([l,v])=>`
+          <div class="sbar"><div class="slbl">${l}</div><div class="strk"><div class="sfil" style="width:${(v||0)*10}%"></div></div>
+          <div class="sval">${v}/10</div></div>`).join('')}
+      </div>
+      <div class="quote">${r.resume_recruteur||nom}</div>
+      ${(pros.length||cons.length)?`<div class="pc">
+        <div class="pb"><div class="pch">Points forts</div><ul>${pros.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+        <div class="cb"><div class="pch">Points faibles</div><ul>${cons.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+      </div>`:''}
+      <div class="rbar ${rcls(reco)}"><span>${rico(reco)}</span><strong>${reco}</strong></div>
+    </div>`;
+  document.getElementById('resultsList').appendChild(el);
+}
+
+function renderResults(){
+  document.getElementById('resultsList').innerHTML='';
+  const ok=results.filter(r=>!r._error);
+  if(!ok.length){document.getElementById('emptyResults').style.display='flex';return;}
+  document.getElementById('emptyResults').style.display='none';
+  ok.forEach(renderOneResult);
+}
+
+function renderComparison(){
+  const ok=results.filter(r=>!r._error).sort((a,b)=>b.score_global-a.score_global);
+  if(ok.length<2){document.getElementById('emptyCompare').style.display='flex';return;}
+  document.getElementById('emptyCompare').style.display='none';
+  const tot=ok.length,avg=(ok.reduce((s,r)=>s+r.score_global,0)/tot).toFixed(1);
+  const rec=ok.filter(r=>r.recommandation.includes('recommandé')).length;
+  const con=ok.filter(r=>r.recommandation.includes('considérer')).length;
+  const nr=ok.filter(r=>r.recommandation.includes('Non')).length;
+  const md=['🥇','🥈','🥉'];
+  document.getElementById('compareContent').innerHTML=`
+    <div class="srow">
+      <div class="scard sc-c"><div class="sv">${tot}</div><div class="sl">Total</div></div>
+      <div class="scard sc-c"><div class="sv">${avg}</div><div class="sl">Moy. /10</div></div>
+      <div class="scard sc-g"><div class="sv">${rec}</div><div class="sl">Recommandés</div></div>
+      <div class="scard sc-a"><div class="sv">${con}</div><div class="sl">À considérer</div></div>
+      <div class="scard sc-r"><div class="sv">${nr}</div><div class="sl">Non retenus</div></div>
+    </div>
+    <div class="ctbl-wrap">
+      <table class="ctbl">
+        <thead><tr><th>Rang</th><th>Candidat</th><th>Score</th><th>Adéq.</th><th>Exp.</th><th>Compétences</th><th>Recommandation</th></tr></thead>
+        <tbody>${ok.map((r,i)=>`<tr${i===0?' class="brow"':''}>
+          <td><span class="rpill">${md[i]||'#'+(i+1)}</span></td>
+          <td><strong>${r.nom}</strong><br><span style="font-size:.67rem;color:var(--text3)">${r.niveau||''}</span></td>
+          <td><strong style="color:${scolor(r.score_global)}">${r.score_global}/10</strong></td>
+          <td style="font-weight:600;color:${scolor(r.score_global)}">${r.adequation_poste}%</td>
+          <td>${r.experience_annees} ans</td>
+          <td style="font-size:.71rem">${(r.competences_techniques||[]).slice(0,3).join(', ')||'—'}</td>
+          <td><span class="rbar ${rcls(r.recommandation)}" style="padding:3px 8px;font-size:.69rem;display:inline-flex;gap:.22rem">${rico(r.recommandation)} ${r.recommandation}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active'); btn.classList.add('active');
+}
+function doExport(type){
+  if(!sid){toast('⚠️ Lancez d\'abord une analyse');return;}
+  const jt=encodeURIComponent(document.getElementById('jobTitle').value||'Poste');
+  window.location.href=`/export/${type}/${sid}?job_title=${jt}`;
+}
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
+{% endblock %}

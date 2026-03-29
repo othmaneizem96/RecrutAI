@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}RecrutAI{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#faf7f2;--cream2:#f3ede3;--cream3:#ede4d6;--parchment:#e8dcc8;
+  --warm-white:#fffdf9;--brown:#3d2b1a;--brown2:#5c4030;
+  --caramel:#b07d4e;--caramel2:#c9954e;--ink:#1c1208;
+  --text:#2d1f10;--text2:#6b5040;--text3:#a08878;
+  --border:#d4c4ae;--border2:#c4b09a;
+  --green:#2d6a4f;--green-bg:#d8f3dc;--green-b:#74c69d;
+  --amber:#856404;--amber-bg:#fff3cd;--amber-b:#ffd166;
+  --red:#7d2226;--red-bg:#fde8e8;--red-b:#e88080;
+  --blue:#1d4ed8;--blue-bg:#dbeafe;--blue-b:#93c5fd;
+  --shadow:0 2px 12px rgba(61,43,26,.08);--shadow2:0 8px 32px rgba(61,43,26,.14);
+  --r:6px;--r2:10px;--r3:16px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;font-size:15px}
+
+/* ── HEADER ── */
+header{background:var(--warm-white);border-bottom:1.5px solid var(--border);
+  padding:0 2rem;display:flex;align-items:center;justify-content:space-between;
+  height:62px;position:sticky;top:0;z-index:200}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:600;
+  color:var(--ink);display:flex;align-items:baseline;gap:2px;text-decoration:none}
+.logo em{font-style:italic;color:var(--caramel)}
+.logo-dot{width:5px;height:5px;background:var(--caramel);border-radius:50%;margin:0 2px 4px}
+.hdr-nav{display:flex;align-items:center;gap:1rem}
+.hdr-link{font-size:.8rem;font-weight:500;color:var(--text2);text-decoration:none;
+  padding:5px 12px;border-radius:var(--r);transition:all .2s}
+.hdr-link:hover{background:var(--cream2);color:var(--brown)}
+.hdr-link.active{color:var(--caramel)}
+
+/* ── PLAN BADGE ── */
+.plan-badge{font-size:.65rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;border:1px solid}
+.badge-free{background:var(--cream2);color:var(--brown2);border-color:var(--border2)}
+.badge-trial{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b)}
+.badge-pro{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  padding:.58rem 1.1rem;border-radius:var(--r);font-family:'Jost',sans-serif;
+  font-size:.84rem;font-weight:500;cursor:pointer;transition:all .2s;
+  border:1px solid transparent;text-decoration:none}
+.btn-primary{background:var(--brown);color:var(--cream);border-color:var(--brown)}
+.btn-primary:hover{background:var(--brown2)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--brown);border-color:var(--border2)}
+.btn-outline:hover{border-color:var(--caramel);color:var(--caramel)}
+.btn-gold{background:var(--caramel);color:var(--warm-white);border-color:var(--caramel)}
+.btn-gold:hover{background:var(--caramel2)}
+.btn-sm{padding:.36rem .78rem;font-size:.76rem}
+
+/* ── FORM ── */
+.form-wrap{max-width:420px;margin:3rem auto;padding:0 1rem}
+.form-card{background:var(--warm-white);border:1px solid var(--border);
+  border-radius:var(--r3);padding:2.25rem;box-shadow:var(--shadow2)}
+.form-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;
+  color:var(--ink);margin-bottom:.3rem}
+.form-sub{font-size:.82rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6}
+.field{display:flex;flex-direction:column;gap:.22rem;margin-bottom:.9rem}
+label{font-size:.78rem;font-weight:500;color:var(--text2)}
+input[type=text],input[type=email],input[type=password]{
+  background:var(--cream);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-family:'Jost',sans-serif;font-size:.84rem;
+  padding:.52rem .78rem;width:100%;transition:border-color .2s}
+input:focus{outline:none;border-color:var(--caramel)}
+::placeholder{color:var(--text3)}
+.form-link{font-size:.8rem;color:var(--caramel);text-align:center;margin-top:.9rem}
+.form-link a{color:var(--caramel);text-decoration:underline;text-underline-offset:3px}
+
+/* ── FLASH MESSAGES ── */
+.flash-wrap{max-width:900px;margin:1rem auto;padding:0 1rem;display:flex;flex-direction:column;gap:.5rem}
+.flash{padding:.6rem 1rem;border-radius:var(--r);font-size:.83rem;font-weight:500;
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.flash-success{background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+.flash-error{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)}
+.flash-warning{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+.flash-info{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b)}
+.flash-close{background:none;border:none;cursor:pointer;color:inherit;font-size:1rem;opacity:.7}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--border);margin:.25rem 0}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <a href="{{ url_for('dashboard.index') }}" class="logo">Recrut<em>AI</em><span class="logo-dot"></span></a>
+  <nav class="hdr-nav">
+    {% if current_user.is_authenticated %}
+      <!-- Plan badge -->
+      {% set ep = current_user.effective_plan %}
+      <span class="plan-badge badge-{{ ep }}">
+        {% if ep == 'trial' %}⏱ Trial{% elif ep == 'pro' %}⭐ Pro{% else %}Free{% endif %}
+      </span>
+      {% if ep != 'pro' %}
+        <a href="{{ url_for('dashboard.upgrade') }}" class="btn btn-gold btn-sm">Passer Pro</a>
+      {% endif %}
+      <a href="{{ url_for('auth.logout') }}" class="hdr-link">Déconnexion</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="hdr-link">Connexion</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">S'inscrire</a>
+    {% endif %}
+  </nav>
+</header>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      <span>{{ message }}</span>
+      <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

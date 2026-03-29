@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Inscription — RecrutAI{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+  <div class="form-card">
+    <div class="form-title">Créer un compte</div>
+    <div class="form-sub">
+      ✨ Vous recevez <strong>5 jours d'essai Pro gratuit</strong> dès l'inscription — sans carte bancaire.
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="vous@exemple.com" required autofocus />
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe <span style="color:var(--text3);font-size:.72rem">(8 caractères min)</span></label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required />
+      </div>
+      <div class="field">
+        <label for="confirm">Confirmer le mot de passe</label>
+        <input type="password" id="confirm" name="confirm" placeholder="••••••••" required />
+      </div>
+
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:var(--r);
+        padding:.65rem .9rem;font-size:.78rem;color:var(--blue);margin-bottom:1rem;line-height:1.6">
+        🎁 <strong>Essai Pro inclus :</strong> 50 CV/jour pendant 5 jours, puis Free (30/jour). Aucun engagement.
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%">Créer mon compte →</button>
+    </form>
+
+    <div class="form-link">
+      Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Se connecter</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
