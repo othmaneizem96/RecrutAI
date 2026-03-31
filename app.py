@@ -22,9 +22,7 @@ from models import db, User
 from auth import auth_bp
 from dashboard import dash_bp
 from payment import payment_bp
-from dotenv import load_dotenv
 
-load_dotenv()
 
 
 # ─── APP FACTORY ──────────────────────────────────────────────────────────────
